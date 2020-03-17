@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="../../socket.io/socket.io.js"></script>
+  </head>
+  <body>
+    <div id='main'>
+    </div>
+    <script>
+      // TODO: This is hardcoded, pass as context with res.render
+      let socket = io.connect('http://localhost:8000');
+      let main = document.getElementById('main');
+
+      socket.on('logs', (message) => {
+        let logElement = document.createElement('div');
+        logElement.innerHTML = message;
+        main.appendChild(logElement);
+      });
+    </script>
+  </body>
+</html>
