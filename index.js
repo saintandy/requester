@@ -3,9 +3,17 @@ const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
+const server = http.listen(1337, function() {
+  console.log('[+] Working.');
+});
+
+app.use(express.static(__dirname + '/templates'));
 
 app.get('/', function(req, res) {
-  res.sendFile(__dirname + '/templates/index.html');
+  console.log(req.headers.host);
+  res.render(__dirname + '/templates/index.ejs', {
+    hostname: req.headers.host
+  });
 });
 
 app.get('/log', function(req, res) {
@@ -14,7 +22,3 @@ app.get('/log', function(req, res) {
   io.emit('logs', message);
 });
 
-
-const server = http.listen(8000, function() {
-  console.log('listening on port 8000');
-});

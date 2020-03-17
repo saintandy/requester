@@ -7,8 +7,9 @@
     <div id='main'>
     </div>
     <script>
-      // TODO: This is hardcoded, pass as context with res.render
-      let socket = io.connect('http://localhost:8000');
+      // Ugly stuff, I hate putting context params like this...
+      const hostname = '<%= hostname %>';
+      let socket = io.connect(hostname);
       let main = document.getElementById('main');
 
       socket.on('logs', (message) => {
