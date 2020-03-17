@@ -2,20 +2,135 @@
 <html>
   <head>
     <script src="../../socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+body {
+  marginTop: 240px;
+}
+
+#main {
+  margin: 18px 24px;
+  margin-top: 100px;
+}
+
+pre {
+  padding: 18px 24px;
+  background: #eee;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+#header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 36px;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  padding: 18px 24px;
+  background: #f3f3f3;
+}
+
+.log-element {
+  display: flex;
+}
+
+.date-element {
+  padding: 18px 24px;
+}
+
+.message-element {
+  margin-left: 24px;
+  flex: 1;
+}
+    </style>
   </head>
   <body>
-    <div id='main'>
+    <div id="header">
+      <h4>
+        <%= hostname %> -- incomming logs
+      </h4>
+      <div>
+        <button type="button" class="btn btn-info" id='scroll-up-button'>Scroll up</button>
+        <button type="button" class="btn btn-warning" id='scroll-down-button'>Scroll down</button>
+        <button type="button" class="btn btn-primary" id='clear-all-button'>Clear all</button>
+        <button type="button" class="btn btn-success" id='socket-status'>
+          Socket on
+        </button>
+      </div>
     </div>
+    <div id="main">
+    </div>
+
     <script>
       // Ugly stuff, I hate putting context params like this...
       const hostname = '<%= hostname %>';
       let socket = io.connect(hostname);
       let main = document.getElementById('main');
+      const socketStatusElement = document.getElementById('socket-status');
+
+      function updateSocketStatus() {
+        if (socket.connected) {
+          socketStatusElement.classList.remove('btn-danger');
+          socketStatusElement.classList.add('btn-success');
+          socketStatusElement.innerHTML = 'Socket on';
+        } else {
+          socketStatusElement.classList.add('btn-danger');
+          socketStatusElement.classList.remove('btn-success');
+          socketStatusElement.innerHTML = 'Socket off';
+        }
+      }
+
+      setInterval(() => {
+        updateSocketStatus();
+      } , 1000);
+
+      const scrollUpButton = document.getElementById('scroll-up-button');
+      scrollUpButton.addEventListener('click', () => {
+        window.scrollTo(0, 0);
+      });
+
+      const scrollDownButton = document.getElementById('scroll-down-button');
+      scrollDownButton.addEventListener('click', () => {
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+
+      const clearAllButton = document.getElementById('clear-all-button');
+      clearAllButton.addEventListener('click', () => {
+        main.innerHTML = '';
+      });
+
+      function createLogElement(message) {
+        // ...
+        function formatDigits(num) {
+          return (num < 10 ? '0' : '') + num;
+        }
+
+        const currentDate = new Date();
+        const dateMessage = formatDigits(currentDate.getHours())
+          + ':' 
+          + formatDigits(currentDate.getMinutes())
+          + ':' 
+          + formatDigits(currentDate.getSeconds());
+
+
+        const dateElement = document.createElement('div');
+        dateElement.className = 'date-element';
+        dateElement.innerHTML = dateMessage;
+
+        const messageElement = document.createElement('pre');
+        messageElement.className = 'message-element';
+        messageElement.innerHTML = message;
+
+        const logElement = document.createElement('div');
+        logElement.className = 'log-element';
+        logElement.appendChild(dateElement);
+        logElement.appendChild(messageElement);
+        return logElement;
+      }
 
       socket.on('logs', (message) => {
-        let logElement = document.createElement('div');
-        logElement.innerHTML = message;
-        main.appendChild(logElement);
+        main.appendChild(createLogElement(message));
       });
     </script>
   </body>
